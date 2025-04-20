@@ -22,6 +22,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   console.log("🔐 API SECRET : ************");
 
   if (!apiId || !apiSecret) {
+    console.log("❌ Identifiants API manquants");
     return res.status(500).json({ error: 'Identifiants API manquants' });
   }
 
@@ -48,6 +49,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     const data = await response.json();
 
     console.log("📦 Réponse de Vectorizer.AI :", data);
+
     res.status(response.status).json(data);
   } catch (error) {
     console.error('❌ Erreur dans le proxy (catch) :', error);
