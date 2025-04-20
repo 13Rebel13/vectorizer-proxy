@@ -11,6 +11,7 @@ app.use(cors());
 
 app.post('/vectorize', upload.single('image'), async (req, res) => {
   if (!req.file) {
+    console.log("⚠️ Aucune image reçue dans la requête");
     return res.status(400).json({ error: 'Aucune image fournie' });
   }
 
@@ -18,6 +19,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   console.log("🔐 Clé API détectée :", apiKey);
 
   if (!apiKey) {
+    console.log("❌ Clé API manquante !");
     return res.status(500).json({ error: 'Clé API manquante côté serveur' });
   }
 
@@ -28,7 +30,6 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype,
     });
 
-    // ✅ Log avant l'appel à Vectorizer
     console.log("➡️ Envoi vers Vectorizer.AI avec headers :", {
       Authorization: `Bearer ${apiKey}`
     });
@@ -43,13 +44,11 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
 
     const data = await response.json();
 
-    // ✅ Log de la réponse complète
     console.log("📦 Réponse de Vectorizer.AI :", data);
-
     res.status(response.status).json(data);
   } catch (error) {
-    console.error('❌ Erreur proxy :', error);
-    res.status(500).json({ error: 'Erreur interne du proxy' });
+    console.error('❌ Erreur dans le proxy (catch) :', error);
+    res.status(500).json({ error: 'Erreur interne du proxy', details: error.message });
   }
 });
 
