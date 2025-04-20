@@ -16,7 +16,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     return res.status(400).json({ error: 'Aucune image fournie' });
   }
 
-  const apiKey = process.env.VECTORIZER_API_KEY;console.log("🔐 Clé API détectée :", apiKey);
+  const apiKey = process.env.VECTORIZER_API_KEY; console.log("🔐 Clé API détectée :", apiKey);
 
 
   if (!apiKey) {
