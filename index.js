@@ -4,20 +4,18 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const cors = require('cors');
 
-// Initialisation de l'application Express
 const app = express();
 const upload = multer();
 
-app.use(cors()); // Autorise toutes les origines
+app.use(cors());
 
-// Point d'entrée /vectorize
 app.post('/vectorize', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Aucune image fournie' });
   }
 
   const apiKey = process.env.VECTORIZER_API_KEY;
-  console.log("🔐 Clé API détectée :", apiKey); // Affiche la clé pour test
+  console.log("🔐 Clé API détectée :", apiKey);
 
   if (!apiKey) {
     return res.status(500).json({ error: 'Clé API manquante côté serveur' });
@@ -30,7 +28,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype,
     });
 
-    // Log des en-têtes envoyés à Vectorizer.AI
+    // ✅ Log avant l'appel à Vectorizer
     console.log("➡️ Envoi vers Vectorizer.AI avec headers :", {
       Authorization: `Bearer ${apiKey}`
     });
@@ -45,7 +43,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
 
     const data = await response.json();
 
-    // Log de la réponse de l'API
+    // ✅ Log de la réponse complète
     console.log("📦 Réponse de Vectorizer.AI :", data);
 
     res.status(response.status).json(data);
@@ -55,7 +53,6 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   }
 });
 
-// Démarrage du serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Proxy Vectorizer.AI démarré sur le port ${PORT}`);
