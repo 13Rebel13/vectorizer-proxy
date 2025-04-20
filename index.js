@@ -4,14 +4,22 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const cors = require('cors');
 
+// Initialisation de l'application Express
 const app = express();
 const upload = multer();
 
 app.use(cors()); // Autorise toutes les origines
 
+// Point d'entrée /vectorize
 app.post('/vectorize', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Aucune image fournie' });
+  }
+
+  const apiKey = process.env.VECTORIZER_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Clé API manquante côté serveur' });
   }
 
   try {
@@ -24,12 +32,13 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     const response = await fetch('https://vectorizer.ai/api/v1/vectorize', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer vk63jyhcanejvdh',
+        Authorization: `Bearer ${apiKey}`,
       },
       body: formData,
     });
 
     const data = await response.json();
+
     res.status(response.status).json(data);
   } catch (error) {
     console.error('Erreur proxy :', error);
@@ -37,7 +46,8 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   }
 });
 
+// Démarrage du serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Proxy Vectorizer.AI démarré sur le port ${PORT}`);
+  console.log(`✅ Proxy Vectorizer.AI démarré sur le port ${PORT}`);
 });
