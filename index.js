@@ -23,11 +23,10 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     return res.status(500).json({ error: 'Identifiants API manquants' });
   }
 
-  // Création de l'encodage Basic Auth
+  // Encodage Basic Auth
   const credentials = Buffer.from(`${apiId}:${apiSecret}`).toString('base64');
   const authHeader = `Basic ${credentials}`;
-
-  console.log("🔐 Auth header utilisé :", authHeader);
+  console.log("🔐 Auth header :", authHeader);
 
   try {
     const formData = new FormData();
@@ -44,9 +43,21 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
       body: formData,
     });
 
-    const data = await response.json();
-    console.log("📦 Réponse de Vectorizer.AI :", data);
-    res.status(response.status).json(data);
+    const contentType = response.headers.get('content-type');
+
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      console.log("📦 Réponse JSON :", data);
+      return res.status(response.status).json(data);
+    } else {
+      const rawText = await response.text();
+      console.warn("⚠️ Réponse non JSON :");
+      console.warn(rawText);
+      return res.status(response.status).json({
+        error: 'Réponse non JSON reçue',
+        raw: rawText,
+      });
+    }
   } catch (error) {
     console.error('❌ Erreur dans le proxy (catch) :', error);
     res.status(500).json({ error: 'Erreur interne du proxy', details: error.message });
