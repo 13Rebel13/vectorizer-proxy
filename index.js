@@ -43,17 +43,12 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
 
     if (contentType && contentType.includes('image/svg+xml')) {
       const svg = await response.text();
-
-      // 🔁 On renvoie le SVG dans un objet JSON (Shopify attend du JSON)
-      return res.status(200).json({
-        svgContent: svg
-      });
+      return res.status(200).json({ svgContent: svg });
     } else if (contentType && contentType.includes('application/json')) {
       const json = await response.json();
       return res.status(response.status).json(json);
     } else {
       const rawText = await response.text();
-      console.warn("⚠️ Réponse non reconnue :", rawText);
       return res.status(response.status).json({
         error: 'Réponse inattendue',
         raw: rawText,
