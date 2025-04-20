@@ -15,12 +15,14 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     return res.status(400).json({ error: 'Aucune image fournie' });
   }
 
-  const apiKey = process.env.VECTORIZER_API_KEY;
-  console.log("🔐 Clé API détectée :", apiKey);
+  const apiId = process.env.VECTORIZER_API_ID;
+  const apiSecret = process.env.VECTORIZER_API_SECRET;
 
-  if (!apiKey) {
-    console.log("❌ Clé API manquante !");
-    return res.status(500).json({ error: 'Clé API manquante côté serveur' });
+  console.log("🔐 API ID :", apiId);
+  console.log("🔐 API SECRET : ************");
+
+  if (!apiId || !apiSecret) {
+    return res.status(500).json({ error: 'Identifiants API manquants' });
   }
 
   try {
@@ -30,15 +32,16 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype,
     });
 
-    console.log("➡️ Envoi vers Vectorizer.AI avec headers :", {
-      Authorization: `Bearer ${apiKey}`
-    });
+    const headers = {
+      'x-api-id': apiId,
+      'x-api-secret': apiSecret
+    };
+
+    console.log("➡️ Envoi vers Vectorizer.AI avec headers :", headers);
 
     const response = await fetch('https://vectorizer.ai/api/v1/vectorize', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers,
       body: formData,
     });
 
