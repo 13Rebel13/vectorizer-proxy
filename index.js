@@ -32,7 +32,7 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     const response = await fetch('https://vectorizer.ai/api/v1/vectorize', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`, // ✅ Seule ligne à garder
       },
       body: formData,
     });
