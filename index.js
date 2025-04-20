@@ -18,13 +18,16 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   const apiId = process.env.VECTORIZER_API_ID;
   const apiSecret = process.env.VECTORIZER_API_SECRET;
 
-  console.log("🔐 API ID :", apiId);
-  console.log("🔐 API SECRET : ************");
-
   if (!apiId || !apiSecret) {
     console.log("❌ Identifiants API manquants");
     return res.status(500).json({ error: 'Identifiants API manquants' });
   }
+
+  // Création de l'encodage Basic Auth
+  const credentials = Buffer.from(`${apiId}:${apiSecret}`).toString('base64');
+  const authHeader = `Basic ${credentials}`;
+
+  console.log("🔐 Auth header utilisé :", authHeader);
 
   try {
     const formData = new FormData();
@@ -33,23 +36,16 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
       contentType: req.file.mimetype,
     });
 
-    const headers = {
-      'x-api-id': apiId,
-      'x-api-secret': apiSecret
-    };
-
-    console.log("➡️ Envoi vers Vectorizer.AI avec headers :", headers);
-
     const response = await fetch('https://vectorizer.ai/api/v1/vectorize', {
       method: 'POST',
-      headers,
+      headers: {
+        Authorization: authHeader,
+      },
       body: formData,
     });
 
     const data = await response.json();
-
     console.log("📦 Réponse de Vectorizer.AI :", data);
-
     res.status(response.status).json(data);
   } catch (error) {
     console.error('❌ Erreur dans le proxy (catch) :', error);
