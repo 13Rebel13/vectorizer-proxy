@@ -11,7 +11,6 @@ app.use(cors());
 
 app.post('/vectorize', upload.single('image'), async (req, res) => {
   if (!req.file) {
-    console.log("⚠️ Aucune image reçue dans la requête");
     return res.status(400).json({ error: 'Aucune image fournie' });
   }
 
@@ -19,14 +18,11 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
   const apiSecret = process.env.VECTORIZER_API_SECRET;
 
   if (!apiId || !apiSecret) {
-    console.log("❌ Identifiants API manquants");
     return res.status(500).json({ error: 'Identifiants API manquants' });
   }
 
-  // Encodage Basic Auth
   const credentials = Buffer.from(`${apiId}:${apiSecret}`).toString('base64');
   const authHeader = `Basic ${credentials}`;
-  console.log("🔐 Auth header :", authHeader);
 
   try {
     const formData = new FormData();
@@ -45,22 +41,27 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
 
     const contentType = response.headers.get('content-type');
 
-    if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
-      console.log("📦 Réponse JSON :", data);
-      return res.status(response.status).json(data);
+    if (contentType && contentType.includes('image/svg+xml')) {
+      const svg = await response.text();
+
+      // 🔁 On renvoie le SVG dans un objet JSON (Shopify attend du JSON)
+      return res.status(200).json({
+        svgContent: svg
+      });
+    } else if (contentType && contentType.includes('application/json')) {
+      const json = await response.json();
+      return res.status(response.status).json(json);
     } else {
       const rawText = await response.text();
-      console.warn("⚠️ Réponse non JSON :");
-      console.warn(rawText);
+      console.warn("⚠️ Réponse non reconnue :", rawText);
       return res.status(response.status).json({
-        error: 'Réponse non JSON reçue',
+        error: 'Réponse inattendue',
         raw: rawText,
       });
     }
   } catch (error) {
-    console.error('❌ Erreur dans le proxy (catch) :', error);
-    res.status(500).json({ error: 'Erreur interne du proxy', details: error.message });
+    console.error('❌ Erreur proxy :', error);
+    res.status(500).json({ error: 'Erreur proxy', details: error.message });
   }
 });
 
