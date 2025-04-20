@@ -38,12 +38,15 @@ app.post('/vectorize', upload.single('image'), async (req, res) => {
     const response = await fetch('https://vectorizer.ai/api/v1/vectorize', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`, // Header d'autorisation
+        Authorization: `Bearer ${apiKey}`,
       },
       body: formData,
     });
 
     const data = await response.json();
+
+    // Log de la réponse de l'API
+    console.log("📦 Réponse de Vectorizer.AI :", data);
 
     res.status(response.status).json(data);
   } catch (error) {
